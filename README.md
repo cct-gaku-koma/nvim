@@ -54,15 +54,29 @@ git clone git@github.com:cct-gaku-koma/nvim.git ~/.config/nvim
 nvim
 ```
 
-初回起動時に `lua/config/lazy.lua` が lazy.nvim を自動で取得し、`lazy-lock.json` に記録されたコミットのプラグインをインストールする。
-続いて mason が LSP / フォーマッタを導入するので、完了まで待つ。
+初回起動時に `lua/config/lazy.lua` が lazy.nvim を自動で取得し、プラグイン・treesitter パーサー・mason のツールをインストールする。
+完了まで数分かかるので、静かになるまで待つこと。
 
-### 5. 確認
+### 5. `:Lazy restore` でバージョンを揃える ★重要
+
+**初回のインストールは `lazy-lock.json` を無視して各プラグインの最新コミットを取得し、lock ファイル自体を書き換えてしまう。**
+そのため、初回起動が終わったら Neovim 内で
+
+```
+:Lazy restore
+```
+
+を1回実行する。これで全プラグインが `lazy-lock.json` 記載のコミットに戻り、元のPCと完全に同じ状態になる。
+
+実行後 `git -C ~/.config/nvim status` を確認し、`lazy-lock.json` に差分が出ていなければ成功。
+差分が残っている場合は `git checkout -- lazy-lock.json` してから `:Lazy restore` をもう一度実行する。
+
+### 6. 確認
 
 | コマンド | 見るもの |
 | --- | --- |
-| `:Lazy` | プラグインがすべて入っているか |
-| `:Mason` | LSP・フォーマッタが入っているか |
+| `:Lazy` | プラグイン36件がすべて入っているか |
+| `:Mason` | LSP・フォーマッタ9件が入っているか |
 | `:checkhealth` | 外部依存の不足がないか |
 
 ## 構成
@@ -76,7 +90,9 @@ lua/config/
   options.lua         -- 追加オプション
   keymaps.lua         -- 追加キーマップ
   autocmds.lua        -- 追加 autocmd
-lua/plugins/          -- プラグインの追加・上書き
+lua/plugins/
+  mason.lua           -- 導入する LSP・フォーマッタの固定リスト
+  example.lua         -- LazyVim のサンプル（先頭で無効化されている）
 ```
 
 有効にしている LazyVim extras:
@@ -87,6 +103,12 @@ lua/plugins/          -- プラグインの追加・上書き
 - `lang.typescript`
 
 extras の増減は `nvim` 内で `:LazyExtras` から行う。変更すると `lazyvim.json` が書き換わるのでコミットすること。
+
+導入される mason パッケージ（`lua/plugins/mason.lua` で固定）:
+
+| LSP | フォーマッタ / リンタ |
+| --- | --- |
+| clangd, json-lsp, lua-language-server, marksman, vtsls | markdownlint-cli2, markdown-toc, shfmt, stylua |
 
 ## 複数PC間での同期
 
